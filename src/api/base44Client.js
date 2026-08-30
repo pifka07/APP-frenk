@@ -178,7 +178,7 @@ const functions = {
 
       const { data: skin } = await supabase
         .from('skins')
-        .select('cost')
+        .select('cost_coins')
         .eq('id', skin_id)
         .single();
 
@@ -188,14 +188,14 @@ const functions = {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if ((statsData?.total_coins ?? 0) < (skin?.cost ?? 0)) {
+      if ((statsData?.total_coins ?? 0) < (skin?.cost_coins ?? 0)) {
         return { data: { success: false, reason: 'NOT_ENOUGH_COINS' } };
       }
 
       await Promise.all([
         supabase.from('player_skins').insert({ user_id: user.id, skin_id }),
         supabase.from('player_stats')
-          .update({ total_coins: (statsData.total_coins ?? 0) - (skin.cost ?? 0) })
+          .update({ total_coins: (statsData.total_coins ?? 0) - (skin.cost_coins ?? 0) })
           .eq('user_id', user.id),
       ]);
       return { data: { success: true } };
