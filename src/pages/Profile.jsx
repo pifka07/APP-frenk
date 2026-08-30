@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Trophy, MapPin, Coins, Hash, User as UserIcon, Pencil, Check, X, Shirt, LogOut, Trash2 } from "lucide-react";
+import { calculatePlayerRank } from '@/components/game/PlayerRanks';
 
 export default function Profile() {
     const navigate = useNavigate();
@@ -19,23 +22,25 @@ export default function Profile() {
     const [editName, setEditName] = useState("");
     const [deleting, setDeleting] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [rankInfo, setRankInfo] = useState(null);
+    const [showRanksDialog, setShowRanksDialog] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const userData = await base44.auth.me();
                 const runsData = await base44.entities.Run.filter({ user_id: userData.id });
-                
-                // Get PlayerStats (created by server on first game)
                 const statsData = await base44.entities.PlayerStats.filter({ user_id: userData.id });
                 
-                setUser(userData);
-                setStats(statsData.length > 0 ? statsData[0] : {
+                const currentStats = statsData.length > 0 ? statsData[0] : {
                     best_score: 0,
                     best_distance: 0,
                     total_coins: 0,
                     total_runs: 0
-                });
+                };
+                setUser(userData);
+                setStats(currentStats);
+                setRankInfo(calculatePlayerRank(currentStats.best_score || 0, currentStats.best_distance || 0));
                 setEditName(userData.username || userData.email?.split('@')[0] || 'Pilot');
                 setRuns(runsData.sort((a, b) => b.score - a.score).slice(0, 10));
             } catch (error) {
@@ -66,8 +71,7 @@ export default function Profile() {
         setShowDeleteDialog(false);
         try {
             const response = await base44.functions.invoke('deleteUserData');
-            
-            if (response.data.success) {
+            if (response.data?.success) {
                 toast.success('Alle Daten gelöscht!');
                 navigate(createPageUrl('Home'));
             } else {
@@ -96,13 +100,24 @@ export default function Profile() {
 
             {/* Profile Header */}
             <div className="flex flex-col items-center mb-8">
-                <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-teal-500 flex items-center justify-center mb-4 shadow-lg overflow-hidden">
-                    <img 
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/693033c50efef1894f9768b3/5cbdbe7c2_Frnkprofilbild.png" 
-                        alt="Profile" 
-                        className="w-full h-full object-cover"
-                    />
-                </div>
+                {rankInfo && (
+                    <button 
+                        onClick={() => setShowRanksDialog(true)}
+                        className="mb-4 cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                    >
+                        <img 
+                            src={`https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6961111599b5db08cf38f4b2/${
+                                rankInfo.player_level === 1 ? 'ab940f029_Abzeichen-Kopie.png' :
+                                rankInfo.player_level === 2 ? '904e55289_Abzeichen-Kopie5.png' :
+                                rankInfo.player_level === 3 ? '0a1c8ab54_Abzeichen-Kopie4.png' :
+                                rankInfo.player_level === 4 ? '4c2d7b20c_Abzeichen-Kopie2.png' :
+                                '640ba9ba4_Abzeichen-Kopie3.png'
+                            }`}
+                            alt={rankInfo.player_rank_name}
+                            className="w-20 h-20 object-contain drop-shadow-xl"
+                        />
+                    </button>
+                )}
                 {isEditing ? (
                     <div className="flex items-center gap-2 mb-1">
                         <Input 
@@ -125,8 +140,21 @@ export default function Profile() {
                         </Button>
                     </div>
                 )}
-                <p className="text-slate-400 text-sm">Level 1 Pigeon</p>
-                <p className="text-slate-500 text-[10px] mt-1">ID: {user?.id}</p>
+                {rankInfo && (
+                    <>
+                        <p className="text-teal-400 font-bold text-sm">{rankInfo.player_rank_name} (Level {rankInfo.player_level})</p>
+                        {rankInfo.next_level_threshold && (
+                            <div className="w-64 mt-3">
+                                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                                    <span>{rankInfo.progress_value.toLocaleString()} Pkt</span>
+                                    <span>{rankInfo.next_level_threshold.toLocaleString()} Pkt</span>
+                                </div>
+                                <Progress value={rankInfo.progress_percentage} className="h-2 [&>div]:bg-teal-500" />
+                            </div>
+                        )}
+                    </>
+                )}
+                <p className="text-slate-500 text-[10px] mt-2">ID: {user?.id}</p>
             </div>
 
             {/* Skins Button */}
@@ -143,28 +171,28 @@ export default function Profile() {
                 <Card className="bg-slate-800 border-slate-700">
                     <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                         <Trophy className="w-8 h-8 text-yellow-400 mb-2" />
-                        <div className="text-2xl font-bold text-white">{user?.best_score || 0}</div>
+                        <div className="text-2xl font-bold text-white">{stats?.best_score || 0}</div>
                         <div className="text-xs text-slate-400 uppercase tracking-wider">High Score</div>
                     </CardContent>
                 </Card>
                 <Card className="bg-slate-800 border-slate-700">
                     <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                         <MapPin className="w-8 h-8 text-teal-400 mb-2" />
-                        <div className="text-2xl font-bold text-white">{user?.best_distance || 0}m</div>
+                        <div className="text-2xl font-bold text-white">{stats?.best_distance || 0}m</div>
                         <div className="text-xs text-slate-400 uppercase tracking-wider">Fartherst Flight</div>
                     </CardContent>
                 </Card>
                 <Card className="bg-slate-800 border-slate-700">
                     <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                         <Coins className="w-8 h-8 text-yellow-500 mb-2" />
-                        <div className="text-2xl font-bold text-white">{user?.total_coins || 0}</div>
+                        <div className="text-2xl font-bold text-white">{stats?.total_coins || 0}</div>
                         <div className="text-xs text-slate-400 uppercase tracking-wider">Total Coins</div>
                     </CardContent>
                 </Card>
                 <Card className="bg-slate-800 border-slate-700">
                     <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                         <Hash className="w-8 h-8 text-purple-400 mb-2" />
-                        <div className="text-2xl font-bold text-white">{user?.total_runs || 0}</div>
+                        <div className="text-2xl font-bold text-white">{stats?.total_runs || 0}</div>
                         <div className="text-xs text-slate-400 uppercase tracking-wider">Total Runs</div>
                     </CardContent>
                 </Card>
@@ -199,39 +227,86 @@ export default function Profile() {
                         <div key={run.id} className="bg-slate-800/50 rounded-lg p-3 flex justify-between items-center border border-slate-700/50">
                             <div>
                                 <div className="font-bold text-white">{run.score} pts</div>
-                                <div className="text-xs text-slate-400">{new Date(run.created_date).toLocaleDateString()}</div>
+                                <div className="text-xs text-slate-400">{new Date(run.created_at || Date.now()).toLocaleDateString()}</div>
                             </div>
                             <div className="text-right">
                                 <div className="text-teal-400 text-sm">{run.distance}m</div>
-                                <div className="text-yellow-500 text-xs">+{run.coins_earned} coins</div>
+                                <div className="text-yellow-500 text-xs">+{run.coins_collected || 0} coins</div>
                             </div>
                         </div>
                     ))
-                    )}
-                    </div>
+                )}
+            </div>
 
-                    {/* Delete Confirmation Dialog */}
-                    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                        <AlertDialogContent className="bg-slate-800 border-slate-700 max-w-sm w-full mx-4">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription className="text-slate-400">
-                                    Alle deine Daten werden gelöscht! Dies kann nicht rückgängig gemacht werden.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
-                                    ESC
-                                </AlertDialogCancel>
-                                <AlertDialogAction 
-                                    onClick={handleDeleteUser}
-                                    className="bg-red-600 hover:bg-red-700 text-white"
-                                >
-                                    DEL
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent className="bg-slate-800 border-slate-700 max-w-sm w-full mx-4">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            Alle deine Daten werden gelöscht! Dies kann nicht rückgängig gemacht werden.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600">
+                            ESC
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handleDeleteUser}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            DEL
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Ranks Info Dialog */}
+            <Dialog open={showRanksDialog} onOpenChange={setShowRanksDialog}>
+                <DialogContent className="bg-slate-800 border-slate-700 max-w-sm w-full mx-4 max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-white text-2xl font-bold text-center">Rank System</DialogTitle>
+                        <DialogDescription className="text-slate-400 text-center text-sm">
+                            Progress = Score × 0.7 + Distance × 0.3
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 mt-4">
+                        {[
+                            { level: 1, name: 'Street Sparrow', threshold: 0, image: 'ab940f029_Abzeichen-Kopie.png' },
+                            { level: 2, name: 'Urban Pigeon', threshold: 10000, image: '904e55289_Abzeichen-Kopie5.png' },
+                            { level: 3, name: 'Sky Runner', threshold: 50000, image: '0a1c8ab54_Abzeichen-Kopie4.png' },
+                            { level: 4, name: 'Apex Eagle', threshold: 150000, image: '4c2d7b20c_Abzeichen-Kopie2.png' },
+                            { level: 5, name: 'Legendary Fränk', threshold: 300000, image: '640ba9ba4_Abzeichen-Kopie3.png' }
+                        ].map((rank) => (
+                            <div 
+                                key={rank.level}
+                                className={`flex items-center gap-4 p-3 rounded-lg border-2 ${
+                                    rankInfo?.player_level === rank.level 
+                                        ? 'bg-teal-500/20 border-teal-500' 
+                                        : 'bg-slate-700/30 border-slate-600'
+                                }`}
+                            >
+                                <img 
+                                    src={`https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6961111599b5db08cf38f4b2/${rank.image}`}
+                                    alt={rank.name}
+                                    className="w-16 h-16 object-contain"
+                                />
+                                <div className="flex-1">
+                                    <div className="font-bold text-white">{rank.name}</div>
+                                    <div className="text-xs text-slate-400">
+                                        Level {rank.level} • {rank.threshold.toLocaleString()} Punkte
+                                    </div>
+                                    {rankInfo?.player_level === rank.level && (
+                                        <div className="text-xs text-teal-400 font-bold mt-1">
+                                            ⭐ Dein aktueller Rank
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    );
-                    }
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}

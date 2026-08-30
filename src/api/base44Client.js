@@ -230,6 +230,17 @@ export const base44 = {
     Mission: makeEntity('missions'),
     PlayerMission: makeEntity('player_missions'),
     PendingRun: makeEntity('pending_runs'),
+    DailyMission: makeEntity('daily_missions'),
+    UnlockedLevel: makeEntity('unlocked_levels'),
+    User: {
+      async filter(conditions) {
+        if (conditions.id) {
+          const { data } = await supabase.from('player_stats').select('*').eq('user_id', conditions.id);
+          return data ?? [];
+        }
+        return [];
+      }
+    }
   },
   functions,
 };

@@ -152,31 +152,33 @@ INSERT INTO upgrades (key, name, description, base_cost, cost_multiplier, max_le
   ('poop_tank',     'Poop Tank',     'Erhöht die Poop-Tank-Kapazität',  100, 1.5, 10, 3.0),
   ('poop_cooldown', 'Poop Cooldown', 'Reduziert die Abklingzeit',       150, 1.8,  5, 0.1),
   ('wing_speed',    'Wing Speed',    'Erhöht die Fluggeschwindigkeit',  120, 1.6,  8, 0.2),
-  ('combo_booster', 'Combo Booster', 'Verlängert die Combo-Dauer',      200, 2.0,  5, 1.0);
+  ('combo_booster', 'Combo Booster', 'Verlängert die Combo-Dauer',      200, 2.0,  5, 1.0)
+ON CONFLICT (key) DO NOTHING;
 
 -- ── Skin-Katalog ──────────────────────────────────────────
 -- image_url-Werte kommen aus dem Supabase Storage deines alten base44-Projekts.
--- Die Assets liegen bereits öffentlich auf qtrypzzcjebvfcihiynt.supabase.co
+-- Die Assets liegen öffentlich auf qtrypzzcjebvfcihiynt.supabase.co
 
 INSERT INTO skins (key, name, description, cost_coins, color_primary, color_secondary, image_url) VALUES
-  ('default',
-   'Fränk Classic',
-   'Der Original-Fränk – kostenlos für alle!',
-   0,
-   '#2DD4BF', '#0f172a',
-   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/693033c50efef1894f9768b3/71a9e1eb7_frnkoriginal.png'),
-
-  ('gold',
-   'Goldener Fränk',
-   'Glänzt wie eine Münze!',
-   500,
-   '#FACC15', '#92400E',
-   NULL),   -- TODO: image_url aus base44 Storage einfügen
-
-  ('pink',
-   'Rosa Fränk',
-   'Für den stilvollen Auftritt.',
-   750,
-   '#EC4899', '#831843',
-   NULL);   -- TODO: image_url aus base44 Storage einfügen
+  ('default',   'Fränk Classic',      'Der Original-Fränk – kostenlos für alle!', 0,    '#2DD4BF', '#0f172a', 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/693033c50efef1894f9768b3/71a9e1eb7_frnkoriginal.png'),
+  ('gold',      'Goldener Fränk',     'Glänzt wie eine Münze!',                   500,  '#FACC15', '#92400E', NULL),
+  ('pink',      'Rosa Fränk',         'Für den stilvollen Auftritt.',             750,  '#EC4899', '#831843', NULL),
+  ('neon',      'Neon Fränk',         'Leuchtet in der Nacht!',                   1000, '#06B6D4', '#0E7490', NULL),
+  ('ninja',     'Ninja Fränk',        'Lautlos und tödlich.',                     1200, '#1E293B', '#0F172A', NULL),
+  ('alien',     'Alien Fränk',        'Aus einer anderen Galaxie.',               1500, '#10B981', '#064E3B', NULL),
+  ('christmas', 'Weihnachts-Fränk',   'Frohe Weihnachten!',                       800,  '#EF4444', '#15803D', NULL),
+  ('bat',       'Bat-Fränk',          'Der dunkle Ritter der Lüfte.',             1400, '#334155', '#0F172A', NULL),
+  ('zombie',    'Zombie Fränk',       'Auferstanden aus den Ruinen.',             1100, '#84CC16', '#3F6212', NULL),
+  ('ghost',     'Geister-Fränk',      'Spukt durch die Stadt.',                   1300, '#A855F7', '#581C87', NULL),
+  ('army',      'Army Fränk',         'Immer einsatzbereit.',                     900,  '#65A30D', '#365314', NULL),
+  ('wood',      'Holz-Fränk',         'Robust wie eine Eiche.',                   600,  '#92400E', '#451A03', NULL),
+  ('stone',     'Stein-Fränk',        'Hart wie Granit.',                         850,  '#64748B', '#334155', NULL),
+  ('skeleton',  'Skelett-Fränk',      'Nur noch Knochen.',                        1000, '#CBD5E1', '#475569', NULL),
+  ('fire',      'Feuer-Fränk',        'Brennt vor Energie!',                      2000, '#F97316', '#C2410C', NULL),
+  ('ice',       'Eis-Fränk',          'Kühl bis auf die Federn.',                 1800, '#38BDF8', '#0284C7', NULL),
+  ('punk',      'Punk Fränk',         'Gegen das System.',                        950,  '#E11D48', '#4C0519', NULL),
+  ('gangster',  'Gangster Fränk',     'Der Boss der Straße.',                     1250, '#EAB308', '#713F12', NULL),
+  ('boss',      'CEO Fränk',          'Zeit ist Geld.',                           2500, '#3B82F6', '#1E3A8A', NULL),
+  ('pixel',     'Pixel Fränk',        'Retro 8-Bit Charme.',                      1600, '#F43F5E', '#881337', NULL)
+ON CONFLICT (key) DO NOTHING;
 

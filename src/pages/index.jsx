@@ -1,41 +1,33 @@
 import Layout from "./Layout.jsx";
 
 import Game from "./Game";
-
 import Home from "./Home";
-
 import Leaderboard from "./Leaderboard";
-
 import Missions from "./Missions";
-
 import PrivacyPolicy from "./PrivacyPolicy";
-
 import Profile from "./Profile";
-
 import Shop from "./Shop";
-
 import Skins from "./Skins";
+import Europa from "./Europa";
+import Nordamerika from "./Nordamerika";
+import Training from "./Training";
+import DailyMissions from "./DailyMissions";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
-    
     Game: Game,
-    
     Home: Home,
-    
     Leaderboard: Leaderboard,
-    
     Missions: Missions,
-    
     PrivacyPolicy: PrivacyPolicy,
-    
     Profile: Profile,
-    
     Shop: Shop,
-    
     Skins: Skins,
-    
+    Europa: Europa,
+    Nordamerika: Nordamerika,
+    Training: Training,
+    DailyMissions: DailyMissions,
 }
 
 function _getCurrentPage(url) {
@@ -78,6 +70,14 @@ function PagesContent() {
                 <Route path="/Shop" element={<Shop />} />
                 
                 <Route path="/Skins" element={<Skins />} />
+
+                <Route path="/Europa" element={<Europa />} />
+
+                <Route path="/Nordamerika" element={<Nordamerika />} />
+
+                <Route path="/Training" element={<Training />} />
+
+                <Route path="/DailyMissions" element={<DailyMissions />} />
                 
             </Routes>
         </Layout>
