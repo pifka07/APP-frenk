@@ -1,24 +1,35 @@
-const NPC_COUNT = 10;
-const BIRD_COUNT = 3;
-const DRONE_COUNT = 3;
+// Berlin Level Enemy Spawning
+
+const GROUND_ENEMIES = [
+    { type:'berlin_npc1',weight:3 },{ type:'berlin_npc2',weight:3 },{ type:'berlin_npc3',weight:3 },
+    { type:'berlin_npc4',weight:3 },{ type:'berlin_npc5',weight:3 },{ type:'berlin_npc6',weight:3 },
+    { type:'berlin_npc7',weight:3 },{ type:'berlin_npc8',weight:3 },{ type:'berlin_npc9',weight:3 },
+    { type:'berlin_npc10',weight:3 }
+];
+const AIR_ENEMIES = [
+    { type:'berlin_bird1',weight:3 },{ type:'berlin_bird2',weight:3 },{ type:'berlin_bird3',weight:3 },
+    { type:'berlin_drone1',weight:2 },{ type:'berlin_drone2',weight:2 },{ type:'berlin_drone3',weight:2 },
+    { type:'fly',weight:2 },{ type:'eagle',weight:1 },{ type:'drone_l2',weight:1 },{ type:'balloon',weight:2 }
+];
 
 export function spawnBerlinEnemy(width, height, groundY, scrollSpeed) {
-  const roll = Math.random();
-  let sprite, w, h, isTarget, isObstacle, score, y;
+    const isAir = Math.random() < 0.5;
+    const pool = isAir ? AIR_ENEMIES : GROUND_ENEMIES;
+    const total = pool.reduce((s,e)=>s+e.weight,0);
+    let rand = Math.random()*total;
+    let selectedType = pool[0].type;
+    for (const e of pool) { rand -= e.weight; if (rand <= 0) { selectedType = e.type; break; } }
 
-  if (roll < 0.5) {
-    const n = 1 + Math.floor(Math.random() * NPC_COUNT);
-    sprite = `berlin_npc${n}`; w = 50; h = 90; isTarget = true; isObstacle = false; score = 100;
-    y = groundY - h;
-  } else if (roll < 0.75) {
-    const n = 1 + Math.floor(Math.random() * BIRD_COUNT);
-    sprite = `berlin_bird${n}`; w = 50; h = 40; isTarget = true; isObstacle = false; score = 80;
-    y = 50 + Math.random() * (groundY - 150);
-  } else {
-    const n = 1 + Math.floor(Math.random() * DRONE_COUNT);
-    sprite = `berlin_drone${n}`; w = 75; h = 35; isTarget = true; isObstacle = false; score = 150;
-    y = 50 + Math.random() * (groundY - 150);
-  }
-
-  return { x: width + 50, y, width: w, height: h, vx: -(scrollSpeed * 1.5), hp: 1, isTarget, isObstacle, spriteType: sprite, scoreValue: score };
+    const baseHeight = 100;
+    const enemy = {
+        x: width+50,
+        y: isAir ? 50+Math.random()*(groundY*0.67-50) : groundY-120,
+        width: baseHeight*0.7, height: baseHeight,
+        vx: -scrollSpeed, hp: 1,
+        isTarget: true, isObstacle: true, scoreValue: 10,
+        spriteType: selectedType, maintainAspect: true
+    };
+    if (selectedType.includes('drone')) { enemy.height=80; enemy.width=120; enemy.scoreValue=20; }
+    else if (selectedType.includes('bird')) { enemy.height=80; enemy.width=80; enemy.scoreValue=15; }
+    return enemy;
 }

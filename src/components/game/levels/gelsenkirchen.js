@@ -1,24 +1,36 @@
-const NPC_COUNT = 11;
-const BIRD_COUNT = 3;
-const DRONE_COUNT = 6;
+// Gelsenkirchen Level Enemy Spawning
+
+const groundEnemyTypes = [
+    { type:'gelsenkirchen_npc1',weight:1 },{ type:'gelsenkirchen_npc2',weight:1 },
+    { type:'gelsenkirchen_npc3',weight:1 },{ type:'gelsenkirchen_npc4',weight:1 },
+    { type:'gelsenkirchen_npc5',weight:1 },{ type:'gelsenkirchen_npc6',weight:1 },
+    { type:'gelsenkirchen_npc7',weight:1 },{ type:'gelsenkirchen_npc8',weight:1 },
+    { type:'gelsenkirchen_npc9',weight:1 },{ type:'gelsenkirchen_npc10',weight:1 },
+    { type:'gelsenkirchen_npc11',weight:1 }
+];
+const airEnemyTypes = [
+    { type:'gelsenkirchen_bird1',weight:2 },{ type:'gelsenkirchen_bird2',weight:2 },
+    { type:'gelsenkirchen_bird3',weight:2 },{ type:'gelsenkirchen_drone1',weight:1 },
+    { type:'gelsenkirchen_drone2',weight:1 },{ type:'gelsenkirchen_drone3',weight:1 },
+    { type:'gelsenkirchen_drone4',weight:1 },{ type:'gelsenkirchen_drone5',weight:1 },
+    { type:'gelsenkirchen_drone6',weight:1 }
+];
 
 export function spawnGelsenkirchenEnemy(width, height, groundY, scrollSpeed) {
-  const roll = Math.random();
-  let sprite, w, h, isTarget, isObstacle, score, y;
-
-  if (roll < 0.5) {
-    const n = 1 + Math.floor(Math.random() * NPC_COUNT);
-    sprite = `gelsenkirchen_npc${n}`; w = 50; h = 90; isTarget = true; isObstacle = false; score = 100;
-    y = groundY - h;
-  } else if (roll < 0.75) {
-    const n = 1 + Math.floor(Math.random() * BIRD_COUNT);
-    sprite = `gelsenkirchen_bird${n}`; w = 50; h = 40; isTarget = true; isObstacle = false; score = 80;
-    y = 50 + Math.random() * (groundY - 150);
-  } else {
-    const n = 1 + Math.floor(Math.random() * DRONE_COUNT);
-    sprite = `gelsenkirchen_drone${n}`; w = 75; h = 35; isTarget = true; isObstacle = false; score = 150;
-    y = 50 + Math.random() * (groundY - 150);
-  }
-
-  return { x: width + 50, y, width: w, height: h, vx: -(scrollSpeed * 1.5), hp: 1, isTarget, isObstacle, spriteType: sprite, scoreValue: score };
+    const enemy = { x:width+50, y:0, vx:-scrollSpeed, vy:0, hp:1, spriteType:'', isTarget:true, isObstacle:true, width:80, height:120, scoreValue:10 };
+    const spawnAir = Math.random() < 0.5;
+    const pool = spawnAir ? airEnemyTypes : groundEnemyTypes;
+    let random = Math.random() * pool.reduce((s,t)=>s+t.weight,0);
+    let selectedType = pool[0].type;
+    for (const t of pool) { random -= t.weight; if (random <= 0) { selectedType = t.type; break; } }
+    enemy.spriteType = selectedType;
+    if (spawnAir) {
+        enemy.width = 60; enemy.height = 60;
+        enemy.y = 50 + Math.random() * (groundY - 90 - 50);
+        enemy.erratic = true;
+    } else {
+        const minY = groundY - 70;
+        enemy.y = minY + Math.random() * (groundY - enemy.height - minY);
+    }
+    return enemy;
 }

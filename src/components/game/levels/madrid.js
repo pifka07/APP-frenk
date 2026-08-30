@@ -1,19 +1,38 @@
-const GROUND = [
-  ['madrid_waiter', 50, 90, true, false, 100], ['madrid_flamenco', 50, 92, true, false, 120],
-  ['madrid_tourist_girl', 50, 88, true, false, 100], ['madrid_flower_girl', 50, 90, true, false, 100],
-  ['madrid_elderly', 50, 85, true, false, 80], ['madrid_flight_attendant', 50, 92, true, false, 110],
-  ['madrid_boy_tourist', 45, 85, true, false, 90], ['madrid_car', 155, 60, false, true, 0],
-];
-const AIR = [
-  ['madrid_pigeon', 50, 42, true, false, 80], ['madrid_parrot', 45, 50, true, false, 100],
-  ['madrid_sparrow', 40, 35, true, false, 70], ['madrid_drone', 75, 35, true, false, 150],
-  ['madrid_balloon', 50, 75, true, false, 100],
-];
+// Madrid Level Configuration
 
 export function spawnMadridEnemy(width, height, groundY, scrollSpeed) {
-  const useAir = Math.random() < 0.35;
-  const pool = useAir ? AIR : GROUND;
-  const [sprite, w, h, isTarget, isObstacle, score] = pool[Math.floor(Math.random() * pool.length)];
-  const y = useAir ? 50 + Math.random() * (groundY - 150) : groundY - h;
-  return { x: width + 50, y, width: w, height: h, vx: -(scrollSpeed * 1.5), hp: 1, isTarget, isObstacle, spriteType: sprite, scoreValue: score };
+    const enemyTypes = [
+        { type: 'madrid_waiter', weight: 15 }, { type: 'madrid_flamenco', weight: 15 },
+        { type: 'madrid_tourist_girl', weight: 10 }, { type: 'madrid_flower_girl', weight: 10 },
+        { type: 'madrid_elderly', weight: 8 }, { type: 'madrid_flight_attendant', weight: 7 },
+        { type: 'madrid_boy_tourist', weight: 7 }, { type: 'madrid_car', weight: 8 },
+        { type: 'madrid_balloon', weight: 5 }, { type: 'madrid_pigeon', weight: 10 },
+        { type: 'madrid_parrot', weight: 10 }, { type: 'madrid_sparrow', weight: 8 },
+        { type: 'madrid_drone', weight: 5 }
+    ];
+    const airTypes = ['madrid_balloon','madrid_pigeon','madrid_parrot','madrid_sparrow','madrid_drone'];
+    const isAir = Math.random() < 0.3;
+    const pool = enemyTypes.filter(e => isAir ? airTypes.includes(e.type) : !airTypes.includes(e.type));
+    const total = pool.reduce((s,e)=>s+e.weight,0);
+    let r = Math.random()*total;
+    const selectedType = pool.find(e=>{r-=e.weight;return r<=0;})?.type || pool[0].type;
+
+    let enemy = { x: width+20, vx: -scrollSpeed, hp: 1, spriteType: selectedType, isTarget: true, isObstacle: false, scoreValue: 10 };
+
+    switch (selectedType) {
+        case 'madrid_waiter':           enemy.y=groundY-160; enemy.width=90;  enemy.height=120; enemy.scoreValue=20; enemy.isObstacle=true; break;
+        case 'madrid_flamenco':         enemy.y=groundY-110; enemy.width=120; enemy.height=120; enemy.scoreValue=25; enemy.isObstacle=true; break;
+        case 'madrid_tourist_girl':     enemy.y=groundY-116; enemy.width=90;  enemy.height=116; enemy.scoreValue=18; enemy.isObstacle=true; break;
+        case 'madrid_flower_girl':      enemy.y=groundY-122; enemy.width=100; enemy.height=120; enemy.scoreValue=20; enemy.isObstacle=true; break;
+        case 'madrid_elderly':          enemy.y=groundY-110; enemy.width=110; enemy.height=116; enemy.scoreValue=30; enemy.isObstacle=true; break;
+        case 'madrid_flight_attendant': enemy.y=groundY-114; enemy.width=80;  enemy.height=116; enemy.scoreValue=18; enemy.isObstacle=true; break;
+        case 'madrid_boy_tourist':      enemy.y=groundY-110; enemy.width=80;  enemy.height=110; enemy.scoreValue=15; enemy.isObstacle=true; break;
+        case 'madrid_car':              enemy.y=groundY-70;  enemy.width=250; enemy.height=220; enemy.scoreValue=30; enemy.isObstacle=true; enemy.isTarget=false; break;
+        case 'madrid_balloon':          enemy.y=80+Math.random()*100;  enemy.width=40; enemy.height=50; enemy.vx=-scrollSpeed*0.5; enemy.scoreValue=20; break;
+        case 'madrid_pigeon':           enemy.y=100+Math.random()*150; enemy.width=45; enemy.height=40; enemy.scoreValue=15; enemy.erratic=true; enemy.isObstacle=true; break;
+        case 'madrid_parrot':           enemy.y=80+Math.random()*120;  enemy.width=40; enemy.height=35; enemy.scoreValue=18; enemy.erratic=true; enemy.isObstacle=true; break;
+        case 'madrid_sparrow':          enemy.y=120+Math.random()*100; enemy.width=35; enemy.height=30; enemy.scoreValue=12; enemy.erratic=true; enemy.isObstacle=true; break;
+        case 'madrid_drone':            enemy.y=120+Math.random()*100; enemy.width=45; enemy.height=30; enemy.scoreValue=25; enemy.isObstacle=true; enemy.isTarget=false; break;
+    }
+    return enemy;
 }

@@ -1,17 +1,69 @@
-const GROUND = [
-  ['business_person', 50, 90, true, false, 120], ['tourist', 50, 88, true, false, 100],
-  ['london_cop', 50, 90, true, false, 150], ['street_vendor', 55, 90, true, false, 100],
-  ['street_musician', 50, 90, true, false, 100], ['london_car', 155, 60, false, true, 0],
-];
-const AIR = [
-  ['pigeon', 55, 45, true, false, 80], ['london_pigeon', 50, 42, true, false, 80],
-  ['balloon', 50, 70, true, false, 100], ['london_drone', 75, 35, true, false, 150],
-];
+export const spawnLondonEnemy = (width, height, groundY, scrollSpeed) => {
+    const londonGroundY = height * 0.995; // London NPCs at 99.5% height
+    const rand = Math.random();
+    const isAir = Math.random() > 0.6;
 
-export function spawnLondonEnemy(width, height, groundY, scrollSpeed) {
-  const useAir = Math.random() < 0.35;
-  const pool = useAir ? AIR : GROUND;
-  const [sprite, w, h, isTarget, isObstacle, score] = pool[Math.floor(Math.random() * pool.length)];
-  const y = useAir ? 50 + Math.random() * (groundY - 150) : groundY - h;
-  return { x: width + 50, y, width: w, height: h, vx: -(scrollSpeed * 1.5), hp: 1, isTarget, isObstacle, spriteType: sprite, scoreValue: score, erratic: sprite === 'pigeon' || sprite === 'london_pigeon' };
-}
+    let enemy = {
+        x: width + 50,
+        y: groundY - 50,
+        width: 60,
+        height: 60,
+        hp: 1,
+        isTarget: true,
+        isObstacle: true,
+        scoreValue: 10,
+        vx: -scrollSpeed,
+        spriteType: 'tourist'
+    };
+
+    if (!isAir) {
+        if (rand < 0.2) {
+            enemy.spriteType = 'tourist';
+            enemy.width = 110; enemy.height = 150;
+            enemy.y = londonGroundY - 170;
+            enemy.vx = -scrollSpeed; enemy.scoreValue = 50;
+        } else if (rand < 0.4) {
+            enemy.spriteType = 'business_person';
+            enemy.width = 120; enemy.height = 160;
+            enemy.y = londonGroundY - 180;
+            enemy.vx = -scrollSpeed; enemy.scoreValue = 40;
+        } else if (rand < 0.55) {
+            enemy.spriteType = 'london_cop';
+            enemy.width = 120; enemy.height = 160;
+            enemy.y = londonGroundY - 180;
+            enemy.vx = -scrollSpeed; enemy.scoreValue = 60;
+        } else if (rand < 0.62) {
+            enemy.spriteType = 'street_vendor';
+            enemy.width = 240; enemy.height = 200;
+            enemy.y = londonGroundY - 220;
+            enemy.vx = -scrollSpeed; enemy.scoreValue = 80;
+        } else if (rand < 0.85) {
+            enemy.spriteType = 'street_musician';
+            enemy.width = 110; enemy.height = 150;
+            enemy.y = londonGroundY - 170;
+            enemy.vx = -scrollSpeed; enemy.scoreValue = 70;
+        } else {
+            enemy.spriteType = 'london_car';
+            enemy.width = 200; enemy.height = 120;
+            enemy.y = londonGroundY - 120;
+            enemy.vx = -scrollSpeed * 2; enemy.scoreValue = 100;
+        }
+    } else {
+        const airRand = Math.random();
+        if (airRand < 0.5) {
+            enemy.spriteType = 'london_pigeon';
+            enemy.isTarget = true; enemy.isObstacle = true;
+            enemy.y = 20 + Math.random() * (groundY - 170);
+            enemy.width = 80; enemy.height = 70;
+            enemy.vx = -scrollSpeed; enemy.erratic = true; enemy.scoreValue = 50;
+        } else {
+            enemy.spriteType = 'balloon';
+            enemy.isTarget = true; enemy.isObstacle = true;
+            enemy.y = 30 + Math.random() * 100;
+            enemy.width = 100; enemy.height = 80;
+            enemy.vx = -scrollSpeed; enemy.scoreValue = 100;
+        }
+    }
+
+    return enemy;
+};
